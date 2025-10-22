@@ -1,0 +1,203 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[german]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{fourier}
+\usepackage{float}              
+\usepackage{caption}  
+\usepackage{adjustbox}
+\usepackage[hidelinks]{hyperref}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+
+\captionsetup[figure]{name=Abb.}
+
+\begin{document}
+
+\tableofcontents
+
+\newpage
+
+\section{Woche 1}
+
+\subsection{Was ist ein Betriebssystem?}
+
+\begin{figure}[H]
+\begin{minipage}[t]{0.45\textwidth}
+\begin{itemize}
+\item Hardware-Ressourcen verwaltet (CPU, Speicher, Festplatte …)
+\item Abstraktionen für Anwendungen bereitgestellt \\
+$\rightarrow$ Anwendungen müssen Hardware nicht direkt ansprechen
+\end{itemize}
+
+\subsubsection*{Hauptaufgaben}
+\begin{enumerate}
+\item Abstraktion
+\begin{itemize}
+\item Einheitliches Interface für versch. Hardware
+\item Ziel: Wiederverwendung, höhere Abstraktion, einfache Nutzung
+\item Herausforderung: Wie viel Hardware soll sichtbar bleiben?
+\end{itemize}
+\item Ressourcenverwaltung
+\begin{itemize}
+\item Entscheidet über Nutzung von CPU, RAM, etc.
+\item Ziele: Schutz, Effizienz, Fairness
+\item Herausforderung: Richtige Mechanismen \& Policies
+\end{itemize}
+\end{enumerate}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.5\textwidth}
+\centering
+\vspace{20mm}
+\adjustbox{valign=c}{\includegraphics[scale=0.7]{pictures/whatos.png}}
+\caption{Grober Aufbau}
+\end{minipage}
+\end{figure}
+
+\subsection{Zentrale Bausteine Betriebssysteme}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.6]{pictures/bausteineos.png}
+\caption{Bausteine OS}
+\end{figure}
+
+\section{Woche 2}
+
+\subsection{Grundlagen}
+
+\begin{itemize}
+\item Prozess: laufende Instanz eines Programms mit eigenem Zustand (Register, Speicher, offene Dateien)
+\item Programm: Nur statischer Code \& Daten; ein Prozess ist die dynamische Ausführung davon
+\item Programm kann mehrere Prozesse gleichzeitig haben
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.4]{pictures/erzeugungprozess.png}
+\caption{Erzeugung eines Prozesses}
+\end{figure}
+
+\subsection{Prozess vs. Thread}
+
+\begin{itemize}
+\item Thread: Leichtgewichtiger Prozess, teilt sich den Adressraum mit anderen Threads im selben Prozess
+\item Prozesse voneinander isoliert, Threads nicht
+\end{itemize}
+
+\subsection{Virtualisierung CPU}
+
+\begin{itemize}
+\item Ziel: Jeder Prozess glaubt, CPU gehöre nur ihm
+\item Zeitliche Aufteilung (Time-Sharing) bei Einprozessor-Systemen
+\item Direkte Ausführung erlaubt hohe Leistung, aber:
+\begin{itemize}
+\item Prozesse dürfen nicht direkt privilegierte Operationen ausführen
+\item OS muss Prozesse unterbrechen können (z. B. bei Endlosschleifen oder I/O-Wartezeiten)
+\end{itemize}
+\end{itemize}
+
+\subsection{Privilegien \& System Calls}
+
+\begin{itemize}
+\item 2 Betriebsmodi:
+\begin{itemize}
+\item User Mode: Eingeschränkter Zugriff
+\item Kernel Mode: Voller Zugriff
+\end{itemize}
+\item System Calls: definierte Schnittstellen, um vom User-Modus in den Kernel-Modus zu wechseln (z. B. read(), write())
+\item CPU führt bei  System Call Moduswechsel durch \& ruft einen System-Call-Handler im Kernel auf
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.75]{pictures/syscallbsp.png}
+\caption{Bsp. SysCall}
+\end{figure}
+
+\subsection{Multitasking \& Scheduling}
+
+\begin{itemize}
+\item Mechanismus: Context-Switch (Wechsel zwischen Prozessen)
+\item Policy: Entscheidung, welcher Prozess wann läuft
+\item 2 Varianten:
+\begin{enumerate}
+\item Kooperatives Multitasking: Prozess gibt CPU freiwillig ab (yield())
+\begin{itemize}
+\item Nachteil: Ein Prozess kann System blockieren
+\end{itemize}
+\item Präemptives Multitasking: OS erzwingt regelmäßig Kontrolle durch Timer-Interrupts\\
+$\rightarrow$ Standard in modernen Systemen
+\end{enumerate}
+\end{itemize}
+
+\subsection{Prozesskontext \& PCB}
+
+\begin{itemize}
+\item Beim Wechsel werden Register, Stackpointer usw. im Process Control Block (PCB) gespeichert
+\item PCB enthält u. a.:
+\begin{itemize}
+\item Prozesszustand (running, ready, blocked)
+\item Registerinhalte
+\item PID, Eltern-/Kindbeziehungen
+\item offene Dateien, Berechtigungen, Priorität
+\end{itemize}
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.4]{pictures/gespeicherteInfoPCB.png}
+\caption{gespeicherte Infos in PCB}
+\end{figure}
+
+\subsection{Prozesszustände}
+
+\begin{figure}[H]
+\begin{minipage}[t]{0.45\textwidth}
+\begin{itemize}
+\item Running: Prozess läuft auf CPU
+\item Ready: wartet auf CPU
+\item Blocked: Wartet auf Ereignis (I/O, Synchronisation)
+\item OS verwaltet Ready-Queues \& Event-Queues
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\centering
+\vspace{-5mm}
+\adjustbox{valign=c}{\includegraphics[scale=0.35]{pictures/pzustand.png}}
+\caption{Prozesszustände}
+\end{minipage}
+\end{figure}
+
+\subsection{Prozesserzeugung}
+
+\subsubsection*{2 Hauptwege:}
+
+\begin{enumerate}
+\item Leerer neuer Prozess (z.B. posix\_spawn()/CreateProcess()):
+\begin{itemize}
+\item OS lädt Code, erstellt Stack, initialisiert PCB
+\end{itemize}
+\item Klonen bestehender Prozesse (Unix: fork() $+$ exec()):
+\begin{itemize}
+\item fork() $\rightarrow$ Duplikat des aktuellen Prozesses
+\item exec() $\rightarrow$ ersetzt Prozessspeicher durch neues Programm
+\item Klassisches Unix-Modell (Shells funktionieren so)
+\end{itemize}
+\end{enumerate}
+
+\subsection{Prozessbeendigung}
+
+\begin{itemize}
+\item exit(status): Prozess endet mit Rückgabewert
+\item Elternprozess ruft wait() auf, um Kindstatus abzuholen
+\item Kind bleibt bis dahin als Zombie (defunct) in der Prozesstabelle
+\end{itemize}
+
+\end{document}
