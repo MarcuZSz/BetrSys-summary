@@ -11,6 +11,7 @@
 \usepackage{float}              
 \usepackage{caption}  
 \usepackage{adjustbox}
+\usepackage{wrapfig}
 \usepackage[hidelinks]{hyperref}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 
@@ -22,7 +23,7 @@
 
 \newpage
 
-\section{Woche 1}
+\section{Einführung}
 
 \subsection{Was ist ein Betriebssystem?}
 
@@ -67,7 +68,7 @@ $\rightarrow$ Anwendungen müssen Hardware nicht direkt ansprechen
 \caption{Bausteine OS}
 \end{figure}
 
-\section{Woche 2}
+\section{Prozesse}
 
 \subsection{Grundlagen}
 
@@ -199,5 +200,202 @@ $\rightarrow$ Standard in modernen Systemen
 \item Elternprozess ruft wait() auf, um Kindstatus abzuholen
 \item Kind bleibt bis dahin als Zombie (defunct) in der Prozesstabelle
 \end{itemize}
+
+\section{Scheduling}
+
+\subsection{Grundidee Schedulings}
+
+\begin{itemize}
+\item \textbf{Ziel:} faire, effiziente \& reaktionsschnelle Zuteilung der CPU and Prozesse 
+\item \textbf{Scheduler:} entscheidet welcher Prozess als Nächstes läuft 
+\item \textbf{Dispatch:} führt tatsächlichen Kontextwechsel (context switch) aus 
+\item \textbf{Workload:} Menge an Jobs mit Ankunftszeit ($T_{\text{arrival}}$) \& Laufzeit ($T_{\text{run}}$)
+\item \textbf{Metriken:}
+\begin{itemize}
+\item Durchlaufzeit (Turnaround Time): $T_{\text{turnaround}}= T_{\text{completion}} - T_{\text{arrival}}$
+\item Reaktionszeit (Response Time) : $T_{\text{response}} = T_{\text{firstrun}} - T_{\text{arrival}}$
+\item Wartezeit \& Overhead minimieren
+\item Durchsatz, Ressourcenauslastung \& Fairness maximieren
+\end{itemize}
+\end{itemize}
+
+\subsection{Wichtige Schedulingstrategien}
+
+\begin{enumerate}
+\item \textbf{FIFO/FCFS (First Come, First Serve)}
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\begin{itemize}
+\item nicht präemptiv, läuft bis Ende
+\item erst A, dann B \& zum Schluss C
+\item einfach, aber Konvoi-Effekt $\rightarrow$ 1. langer Job blockiert weitere kurze
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\vspace{-15mm}
+\adjustbox{valign=c}{\includegraphics[scale=.35]{pictures/fifosche.png}}
+\caption{$\Delta T_{\text{turnaround}} =(10s+20s+30s)/3 = 20s$}
+\end{minipage}
+\end{figure}
+\item \textbf{SJF (Shortest Job First)}
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\begin{itemize}
+\item nicht präemptiv, wählt kürzesten Job
+\item optimal für minimale durchschnittliche Durchlaufzeit (bekannte Laufzeiten)
+\item nicht geeignet, wenn Ankunftszeiten unterschiedlich oder Laufzeiten unbekannt
+\item kurze Jobs vorziehen verbessert Durchlaufzeit
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\vspace{-7mm}
+\adjustbox{valign=c}{\includegraphics[scale=.35]{pictures/sjfsche.png}}
+\caption{$Delta T_{\text{turnaround}} = (80s+10s+20s)/3 = 36,7s$}
+\end{minipage}
+\end{figure}
+\item \textbf{STCF (Shortest Time to Completion First)}
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\begin{itemize}
+\item präemptive Variante von SJF
+\item wählt Job mit kürzester verbleibenden Zeit
+\item bessere Reaktionszeit \& geringe mittlere Durchlaufzeit
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\vspace{-15mm}
+\adjustbox{valign=c}{\includegraphics[scale=.35]{pictures/stcfsche.png}}
+\caption{$\Delta T_{\text{turnaround}} =(80s+(20s-10s)+(30s-10s))/3 = 36,7s$}
+\end{minipage}
+\end{figure}
+\newpage
+\item \textbf{RR (Round Robin)}
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\begin{itemize}
+\item präemptiv mit Zeitquanten(/-scheiben)
+\item allen Prozessen gegenüber fair, gut für interaktive Systeme
+\item schlechtere Durchlaufzeiten, aber gute Reaktionszeiten
+\item Zeitscheibenlänge zu kurz $\rightarrow$ viel Overhead, zu lang $\rightarrow$ schlechte Reaktionszeit
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\vspace{-5mm}
+\adjustbox{valign=c}{\includegraphics[scale=.4]{pictures/fifovsrr.png}}
+\caption{FIFO vs RR: \\ $T_{\text{reaction}}= (0+5+10)/3=5$ ~ ~ ~ ~ ~ ~ ~ ~ $T_{\text{reaction}}=(0+1+2)/3=1$}
+\end{minipage}
+\end{figure}
+\end{enumerate}
+
+\subsection{Erweiterungen: Realistische Szenarien}
+
+\textbf{I/O-Einfluss}
+\begin{itemize}
+\item Prozesse wechseln zw. CPU- \& I/O-Phasen
+\item CPU-bound vs I/O-bound Prozesse $\rightarrow$ Scheduling muss reagieren
+\end{itemize}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[scale=.5]{pictures/oio.png}
+\caption{keine Berücksichtigung von I/O}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[scale=.5]{pictures/mio.png}
+\caption{mit Berücksichtigung von I/O)}
+\end{minipage}
+\end{figure}
+
+\noindent
+\textbf{MLFQ (Multi-Level Feedback Queue)}
+\begin{itemize}
+\item mehrere Priostufen mit Round Robin pro Ebene:
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\begin{enumerate}
+\item priority(A) > priority(B), A ausführen
+\item priority(A) == priority(B), A \& B nach RR ausführen
+\item Start von Prozess mit höchster Prio
+\item nutzt Job gesamte Zeitscheibe dann runterstufen
+\end{enumerate}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\vspace{-10mm}
+\adjustbox{valign=c}{\includegraphics[scale=.5]{pictures/prio.png}}
+\caption{Prio nach Round Robin}
+\end{minipage}
+\end{figure}
+\item interaktive Prozesse (I/O-bound) in höheren Queues $\rightarrow$ bessere Reaktionszeit
+\item herabstufen von CPU-bound Prozessen
+\item Probleme: Starvation \& Systemausnutzung $\rightarrow$ Lösung durch dynamische Anpassung
+\end{itemize}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[scale=.4]{pictures/cpubound.png}
+\caption{CPU-bound $\rightarrow$ langlaufender Job}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[scale=.4]{pictures/iobound.png}
+\caption{I/O-bound $\rightarrow$ interaktiver Prozess}
+\end{minipage}
+\end{figure}
+
+\subsection{Modernes Scheduling: CFS (Complety Fair Scheduler, Linux ab 2007)}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\begin{itemize}
+\item Ziel: Jeder Prozess erhält fairen Anteil der CPU
+\item Virtuelle Laufzeit (vruntime): misst tatsächliche CPU-Nutzung
+\item Prozesse in Red-Black-Tree sortiert \\ $\rightarrow$ geringste vruntime zuerst
+\item Zeitscheiben abhängig von: \\
+\[\text{time\_slice} = \frac{\text{sched\_latency}}{\text{\#processes}}\]
+mit Mindestwert $\text{min\_granularity}$
+\item Prios (nice-Wert) beeinflussen Gewicht
+\begin{itemize}
+\item nice von -20 (hoch) bis +19 (niedrig)
+\item Laufzeit wächst langsamer für hohe Prioritäten
+\end{itemize}
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\vspace{0mm}
+\adjustbox{valign=c}{\includegraphics[scale=.5]{pictures/vrun.png}}
+\caption{Ready Queue in einem Red-Black-Tree}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[scale=.3]{pictures/cfs.png}
+\caption{Bespiel von CFS}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[scale=.3]{pictures/cfsprio.png}
+\caption{Bespiel von CFS mit Prio}
+\end{minipage}
+\end{figure}
 
 \end{document}
