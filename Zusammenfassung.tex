@@ -13,9 +13,26 @@
 \usepackage{adjustbox}
 \usepackage{wrapfig}
 \usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 
 \captionsetup[figure]{name=Abb.}
+
+\lstset{
+  language=C,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{green!60!black}\itshape,
+  stringstyle=\color{red},
+  numbers=left,
+  numberstyle=\tiny,
+  stepnumber=1,
+  numbersep=5pt,
+  showstringspaces=false,
+  frame=single,
+  breaklines=true
+}
 
 \begin{document}
 
@@ -181,14 +198,14 @@ $\rightarrow$ Standard in modernen Systemen
 \subsubsection*{2 Hauptwege:}
 
 \begin{enumerate}
-\item Leerer neuer Prozess (z.B. posix\_spawn()/CreateProcess()):
+\item Leerer neuer Prozess (z.B. \texttt{posix\_spawn(})/\texttt{CreateProcess()}):
 \begin{itemize}
 \item OS lädt Code, erstellt Stack, initialisiert PCB
 \end{itemize}
-\item Klonen bestehender Prozesse (Unix: fork() $+$ exec()):
+\item Klonen bestehender Prozesse (Unix: \texttt{fork()} $+$ \texttt{exec()}):
 \begin{itemize}
-\item fork() $\rightarrow$ Duplikat des aktuellen Prozesses
-\item exec() $\rightarrow$ ersetzt Prozessspeicher durch neues Programm
+\item \texttt{fork()} $\rightarrow$ Duplikat des aktuellen Prozesses
+\item \texttt{exec()} $\rightarrow$ ersetzt Prozessspeicher durch neues Programm
 \item Klassisches Unix-Modell (Shells funktionieren so)
 \end{itemize}
 \end{enumerate}
@@ -254,7 +271,7 @@ $\rightarrow$ Standard in modernen Systemen
 \centering
 \vspace{-7mm}
 \adjustbox{valign=c}{\includegraphics[scale=.35]{pictures/sjfsche.png}}
-\caption{$Delta T_{\text{turnaround}} = (80s+10s+20s)/3 = 36,7s$}
+\caption{$\Delta T_{\text{turnaround}} = (80s+10s+20s)/3 = 36,7s$}
 \end{minipage}
 \end{figure}
 \item \textbf{STCF (Shortest Time to Completion First)}
@@ -313,7 +330,7 @@ $\rightarrow$ Standard in modernen Systemen
 \begin{minipage}[t]{.5\textwidth}
 \centering
 \includegraphics[scale=.5]{pictures/mio.png}
-\caption{mit Berücksichtigung von I/O)}
+\caption{mit Berücksichtigung von I/O}
 \end{minipage}
 \end{figure}
 
@@ -378,11 +395,16 @@ mit Mindestwert $\text{min\_granularity}$
 \hfill
 \begin{minipage}[t]{.5\textwidth}
 \centering
-\vspace{0mm}
+\vspace{15mm}
 \adjustbox{valign=c}{\includegraphics[scale=.5]{pictures/vrun.png}}
 \caption{Ready Queue in einem Red-Black-Tree}
 \end{minipage}
 \end{figure}
+
+Prozess k mit Gewicht:
+\[\text{time\_slice}_k = \frac{\text{weight}_k}{\sum_{i=0}^{n-1}\text{weight}_i} \cdot \text{sched\_latency}\]
+Aktualisierung virtueller Laufzeit:
+\[\Delta \text{vruntime}_k = \frac{\text{weight}_0}{\text{weight}_k} \cdot \text{vruntime}_k\]
 
 \begin{figure}[H]
 \begin{minipage}[t]{.5\textwidth}
@@ -397,5 +419,220 @@ mit Mindestwert $\text{min\_granularity}$
 \caption{Bespiel von CFS mit Prio}
 \end{minipage}
 \end{figure}
+
+\section{Speichervirtualisierung}
+
+\subsection{Grundidee der Virtualisierung}
+
+\begin{itemize}
+\item Ziel: Prozesse sollen eigene, isolierte Adressräume haben
+\item Mechanismen:
+\begin{itemize}
+\item virtuelle CPU: Context Switch, Scheduling
+\item virtueller RAM: Adressübersetzung, Paging, Swapping
+\end{itemize}
+\item Policies: Scheduling (CPU), Seitenersetzung (RAM)
+\end{itemize}
+
+\subsection{Speicherorganisation in Prozessen}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Addressraum}
+\begin{itemize}
+\item Jeder Prozess hat eine Reihe von Adressen, die auf
+Bytes abgebildet werden
+\item statisch: Code, globale Variablen
+\item dynamisch: Stack (LIFO), Heap (dynamische Alloc)
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\vspace{-15mm}
+\adjustbox{valign=c}{\includegraphics[scale=.4]{pictures/adraum.png}}
+\caption{Addressraum}
+\end{minipage}
+\end{figure}
+
+\noindent
+\textbf{Stack}
+\begin{itemize}
+\item verwaltet lokale Variablen \& Funktionsaufrufe (Stack Frames)
+\item Rekursion erzeugt neue Frames
+\item Alloc/Dealloc sehr effizient (nur Stackpointer-Bewegung)
+\end{itemize}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Heap}
+\begin{itemize}
+\item flexible Speicherverwaltung mit \texttt{malloc()} \& \texttt{free()}
+\item Probleme: Fragmentierung
+\begin{itemize}
+\item intern: Block größer als benötigt
+\item extern: freie Blöcke zu klein verteilt
+\end{itemize}
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\vspace{5mm}
+\adjustbox{valign=c}{\includegraphics[scale=.4]{pictures/haf.png}}
+\caption{Heap mit \texttt{free} \& \texttt{alloc}}
+\end{minipage}
+\end{figure}
+
+\subsection{Speicherverwaltungsstrategien}
+
+\textbf{Free List}
+\begin{itemize}
+\item freie Blöcke in einer Liste gespeichert
+\item First Fit: Beginnend vom Kopf der Liste, finde den ersten genügend großen Block \& teile ihn auf
+\item Best Fit: Finde den kleinsten, gerade noch passenden Block für die Alloc
+\item Worst Fit: Wenn kein passender Block in der Liste existiert, finde den größten Block \& teile ihn auf (um
+kleine Restblöcke zu verhindern)
+\item Next Fit: Wie First Fit, aber beginne jeweils hinter dem zuletzt aufgeteilten Block
+\item Coalescing = Nachbarblöcke zsmführen
+\end{itemize}
+
+\noindent
+\textbf{Buddy Allocator}
+\begin{itemize}
+\item Speicher in 2er-Potenzen geteilt
+\item vereinfacht zsmführen (\glqq Buddy\grqq -Blöcke, XOR)
+\item Nachteil: feste Blockgrößen $\rightarrow$ interne Fragmentierung
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.325]{pictures/bulloc.png}
+\caption{Bsp zum Buddy Allocator}
+\end{figure}
+
+\subsection{Speicherzugriff}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Variablen je nach Typ}
+\begin{itemize}
+\item Code: ausführbarer Speicher
+\item Statische Daten: global
+\item Stack: lokale Variablen
+\item Heap: dynamic allocated data
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.6\textwidth}
+\begin{lstlisting}
+int x;
+
+int main(int argc, char *argv[]) {
+	int y;
+	int *z;
+	z = malloc(sizeof(int));
+}
+\end{lstlisting}
+\end{minipage}
+\end{figure}
+
+\subsection{Virtualisierung des Speichers}
+
+Ziel: Mehrere Prozesse gleichzeitig ohne Konflikte
+
+\begin{enumerate}
+\item Zeitliche Aufteilung (time sharing)
+\begin{itemize}
+\item Prozesse nacheinander im RAM, Rest auf Disk
+\item extrem langsamer Disk-I/O bei jedem Kontaktwechsel
+\begin{figure}[H]
+\begin{minipage}[t]{.15\textwidth}
+\centering
+\includegraphics[scale=.15]{pictures/time_share_1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.2\textwidth}
+\centering
+\includegraphics[scale=.15]{pictures/time_share_2.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\centering
+\includegraphics[scale=.15]{pictures/time_share_3.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\centering
+\includegraphics[scale=.15]{pictures/time_share_4.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.15\textwidth}
+\centering
+\includegraphics[scale=.15]{pictures/time_share_5.png}
+\end{minipage}
+\caption{Beispiel zum Time-Share-Speicher}
+\end{figure}
+\end{itemize}
+\item Statische Verschiebung
+\begin{itemize}
+\item OS schreibt Programm beim Laden um (Adressen anpassen)
+\item kein Schutz, keine flexible Umschichtung
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.4]{pictures/speicherlayout.png}
+\caption{Layout im Speicher}
+\end{figure}
+\end{itemize}
+\item Dynamische Verschiebung (Basisregister)
+\begin{itemize}
+\item Hardware (MMU) addiert bei jedem Zugriff einen Offset (Basisregister)
+\item jeder Prozess bekommt eigenes Basisregister $\rightarrow$ Schutz möglich
+\item kein Limit $\rightarrow$ Prozess kann in Speicher anderer schreiben
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[scale=.25]{pictures/mmu.png}
+\caption{MMU ändert Prozessadresse dynamisch}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[scale=.25]{pictures/basisregister.png}
+\caption{Implementierung Basisregister}
+\end{minipage}
+\end{figure}
+\end{itemize}
+\item Base + Bounds
+\begin{itemize}
+\item zusätzliches Bounds-Register begrenzt Adressraumgröße
+\item Schutz bei Überschreitung $\rightarrow$ Interrupt
+\item schnell, einfach, geschützt
+\item jeder Prozess braucht zusammenhängenden Speicher
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.4]{pictures/base+bounds.png}
+\caption{Base+Bounds Implementierung}
+\end{figure}
+\end{itemize}
+\item Segmentierung
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\begin{itemize}
+\item Adressraum in logische Segmente (Code, Stack, Heap) geteilt
+\item jedes Segment hat eigenes Base+Bounds \& Schutzrechte
+\item getrenntes Wachsen, selektives Sharing, Schutz
+\item externe Fragmentierung, Speicher evtl. nicht contiguous
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\vspace{-5mm}
+\includegraphics[scale=.5]{pictures/segimp.png}
+\caption{Segmentierung Implementierung}
+\end{minipage}
+\end{figure}
+\end{enumerate}
 
 \end{document}
