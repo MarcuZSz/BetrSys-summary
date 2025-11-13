@@ -85,9 +85,11 @@ $\rightarrow$ Anwendungen müssen Hardware nicht direkt ansprechen
 \caption{Bausteine OS}
 \end{figure}
 
-\section{Prozesse}
+\section{Virtualisierung}
 
-\subsection{Grundlagen}
+\subsection{Prozesse}
+
+\subsubsection{Grundlagen}
 
 \begin{itemize}
 \item Prozess: laufende Instanz eines Programms mit eigenem Zustand (Register, Speicher, offene Dateien)
@@ -101,14 +103,14 @@ $\rightarrow$ Anwendungen müssen Hardware nicht direkt ansprechen
 \caption{Erzeugung eines Prozesses}
 \end{figure}
 
-\subsection{Prozess vs. Thread}
+\subsubsection{Prozess vs. Thread}
 
 \begin{itemize}
 \item Thread: Leichtgewichtiger Prozess, teilt sich den Adressraum mit anderen Threads im selben Prozess
 \item Prozesse voneinander isoliert, Threads nicht
 \end{itemize}
 
-\subsection{Virtualisierung CPU}
+\subsubsection{Virtualisierung CPU}
 
 \begin{itemize}
 \item Ziel: Jeder Prozess glaubt, CPU gehöre nur ihm
@@ -120,7 +122,7 @@ $\rightarrow$ Anwendungen müssen Hardware nicht direkt ansprechen
 \end{itemize}
 \end{itemize}
 
-\subsection{Privilegien \& System Calls}
+\subsubsection{Privilegien \& System Calls}
 
 \begin{itemize}
 \item 2 Betriebsmodi:
@@ -138,7 +140,7 @@ $\rightarrow$ Anwendungen müssen Hardware nicht direkt ansprechen
 \caption{Bsp. SysCall}
 \end{figure}
 
-\subsection{Multitasking \& Scheduling}
+\subsubsection{Multitasking \& Scheduling}
 
 \begin{itemize}
 \item Mechanismus: Context-Switch (Wechsel zwischen Prozessen)
@@ -154,7 +156,7 @@ $\rightarrow$ Standard in modernen Systemen
 \end{enumerate}
 \end{itemize}
 
-\subsection{Prozesskontext \& PCB}
+\subsubsection{Prozesskontext \& PCB}
 
 \begin{itemize}
 \item Beim Wechsel werden Register, Stackpointer usw. im Process Control Block (PCB) gespeichert
@@ -173,7 +175,7 @@ $\rightarrow$ Standard in modernen Systemen
 \caption{gespeicherte Infos in PCB}
 \end{figure}
 
-\subsection{Prozesszustände}
+\subsubsection{Prozesszustände}
 
 \begin{figure}[H]
 \begin{minipage}[t]{0.45\textwidth}
@@ -193,9 +195,9 @@ $\rightarrow$ Standard in modernen Systemen
 \end{minipage}
 \end{figure}
 
-\subsection{Prozesserzeugung}
+\subsubsection{Prozesserzeugung}
 
-\subsubsection*{2 Hauptwege:}
+\textbf{2 Hauptwege:}
 
 \begin{enumerate}
 \item Leerer neuer Prozess (z.B. \texttt{posix\_spawn(})/\texttt{CreateProcess()}):
@@ -210,7 +212,7 @@ $\rightarrow$ Standard in modernen Systemen
 \end{itemize}
 \end{enumerate}
 
-\subsection{Prozessbeendigung}
+\subsubsection{Prozessbeendigung}
 
 \begin{itemize}
 \item exit(status): Prozess endet mit Rückgabewert
@@ -218,9 +220,9 @@ $\rightarrow$ Standard in modernen Systemen
 \item Kind bleibt bis dahin als Zombie (defunct) in der Prozesstabelle
 \end{itemize}
 
-\section{Scheduling}
+\subsection{Scheduling}
 
-\subsection{Grundidee Schedulings}
+\subsubsection{Grundidee Schedulings}
 
 \begin{itemize}
 \item \textbf{Ziel:} faire, effiziente \& reaktionsschnelle Zuteilung der CPU and Prozesse 
@@ -236,7 +238,7 @@ $\rightarrow$ Standard in modernen Systemen
 \end{itemize}
 \end{itemize}
 
-\subsection{Wichtige Schedulingstrategien}
+\subsubsection{Wichtige Schedulingstrategien}
 
 \begin{enumerate}
 \item \textbf{FIFO/FCFS (First Come, First Serve)}
@@ -312,7 +314,7 @@ $\rightarrow$ Standard in modernen Systemen
 \end{figure}
 \end{enumerate}
 
-\subsection{Erweiterungen: Realistische Szenarien}
+\subsubsection{Erweiterungen: Realistische Szenarien}
 
 \textbf{I/O-Einfluss}
 \begin{itemize}
@@ -374,7 +376,7 @@ $\rightarrow$ Standard in modernen Systemen
 \end{minipage}
 \end{figure}
 
-\subsection{Modernes Scheduling: CFS (Complety Fair Scheduler, Linux ab 2007)}
+\subsubsection{Modernes Scheduling: CFS (Complety Fair Scheduler, Linux ab 2007)}
 
 \begin{figure}[H]
 \begin{minipage}[t]{.45\textwidth}
@@ -420,9 +422,9 @@ Aktualisierung virtueller Laufzeit:
 \end{minipage}
 \end{figure}
 
-\section{Speichervirtualisierung}
+\subsection{Speichervirtualisierung}
 
-\subsection{Grundidee der Virtualisierung}
+\subsubsection{Grundidee der Virtualisierung}
 
 \begin{itemize}
 \item Ziel: Prozesse sollen eigene, isolierte Adressräume haben
@@ -434,7 +436,7 @@ Aktualisierung virtueller Laufzeit:
 \item Policies: Scheduling (CPU), Seitenersetzung (RAM)
 \end{itemize}
 
-\subsection{Speicherorganisation in Prozessen}
+\subsubsection{Speicherorganisation in Prozessen}
 
 \begin{figure}[H]
 \begin{minipage}[t]{.45\textwidth}
@@ -484,7 +486,7 @@ Bytes abgebildet werden
 \end{minipage}
 \end{figure}
 
-\subsection{Speicherverwaltungsstrategien}
+\subsubsection{Speicherverwaltungsstrategien}
 
 \textbf{Free List}
 \begin{itemize}
@@ -511,7 +513,7 @@ kleine Restblöcke zu verhindern)
 \caption{Bsp zum Buddy Allocator}
 \end{figure}
 
-\subsection{Speicherzugriff}
+\subsubsection{Speicherzugriff}
 
 \begin{figure}[H]
 \begin{minipage}[t]{.45\textwidth}
@@ -537,7 +539,7 @@ int main(int argc, char *argv[]) {
 \end{minipage}
 \end{figure}
 
-\subsection{Virtualisierung des Speichers}
+\subsubsection{Virtualisierung des Speichers}
 
 Ziel: Mehrere Prozesse gleichzeitig ohne Konflikte
 
@@ -634,5 +636,203 @@ Ziel: Mehrere Prozesse gleichzeitig ohne Konflikte
 \end{minipage}
 \end{figure}
 \end{enumerate}
+
+\subsection{Paging}
+
+\subsubsection{Idee von Paging}
+
+\textbf{Ziel:} Speicher in gleichgroße Blöcke zerlegen, um Fragmentierung zu vermeiden
+
+\begin{itemize}
+\item virtuelle Adressräume $\rightarrow$ Pages
+\item physischer Speicher $\rightarrow$ Frames
+\item jede virtuelle Seite kann in beliebigen physischen Rahmen liegen
+\item Vorteile
+\begin{enumerate}
+\item keine externe Fragmentierung
+\item schnelle Allokation \& Freigabe
+\item Auslagerung von Teilen des Hauptspeicher in Festspeicher möglich (swapping)
+\end{enumerate}
+\item Nachteile
+\begin{enumerate}
+\item interne Fragmentierung, Seite größer als Speicher
+\item hohe Kosten durch zusätzlichen Speicherzugriff
+\item Platzbedarf für Seitentabellen
+\end{enumerate}
+\end{itemize}
+
+\subsubsection{Aufbau virtueller Adressen}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.33\textwidth}
+\centering
+\includegraphics[scale=.25]{pictures/logphy.png}
+\caption{Logisch zu Physisch}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.33\textwidth}
+\centering
+\includegraphics[scale=.2]{pictures/adform.png}
+\caption{Adressformat}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.33\textwidth}
+\centering
+\includegraphics[scale=.25]{pictures/virtphy.png}
+\caption{Virtuell zu Physisch}
+\end{minipage}
+\end{figure}
+
+\subsubsection{Seitentabellen}
+
+\begin{itemize}
+\item Größe einer Seitentabelle = Anzahl Einträge ($2^n$) $\cdot$ Größe eines Eintrags in bytes
+\item Seitentabelle im Hauptspeicher
+\item Jede Seite hat ein Page Table Entry (PTE)
+\begin{itemize}
+\item Valid Bit: Seitentabelleneintrag gültig (V)?
+\item Present Bit: Seite im Speicher vorhanden (P)?
+\item Protection Bits: Seite les- (r), schreib- (w) und/oder ausführnar (x)?
+\item Accessed Bits: Kürzlich auf Seite zugegriffen (A)?
+\item Dirty Bit: Seite bereits einmal verändert (D)?
+\end{itemize}
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.45]{pictures/seitentabelle.png}
+\caption{Veranschaulichung zur Nutzung von Seitentabellen}
+\end{figure}
+
+\subsubsection{Translation Lookaside Buffer (TLB)}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Cache für Adressübersetzungen in der MMU}
+\begin{itemize}
+\item bei TLB-Hit: schnelle Übersetzung
+\item bei TLB-Miss: PTE muss aus RAM geladen werden
+\item TLB-Performance kann durch größere Seiten bei gegebener Anzahl Einträgen verbessert werden
+\item Effektivität stark abhängig von Locality
+\begin{enumerate}
+\item Spatial Locality: benachbarte Adressen (Arrayzugriffe)
+\item Temporal Locality: Wiederholte Zugriffe
+\end{enumerate}
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\vspace{5mm}
+\includegraphics[scale=.3]{pictures/worktlb.png}
+\caption{Workload-Zugriffsmuster}
+\end{minipage}
+\end{figure}
+
+\newpage
+\noindent
+
+Beispiele:
+\begin{itemize}
+\item Arrayzugriff: fast nur TLB-Hits $\rightarrow$ sehr schnell
+\item zufälliges Zugriffsmuster ohne Wiederholungen: viele Misses $\rightarrow$ langsam
+\end{itemize}
+
+\subsubsection{TLB Ersetzungsstrategien}
+
+\begin{itemize}
+\item Least Recently Used (LRU): am längsten ungenutzten TLB Eintrag entfernen (evict)
+\item Random: züfälligen Eintrag entfernen
+\item Random in bestimmten Fällen besser als LRU
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.75]{pictures/bsplru.png}
+\caption{Pathologischer Fall LRU - jeder Zugriff ein TLB Miss durch Entfernung der Übersetzung vor Nutzung}
+\end{figure}
+
+\subsubsection{Mehrstufige Seitentabellen}
+
+\textbf{Lösung für große Seitentabellen, da Seitentabellen viel Platz benötigen und zusammenhängend gespeichert werden müssen! Es können ungültige Einträge vermieden werden.}
+
+\begin{itemize}
+\item Seitentabelle selbst in Seiten aufgeteilt
+\item äußere Ebene = Page Directory
+\item innere Ebene = Page Table
+\item nur tatsächliche Teilstrukturen angelegt
+\item weniger Verbrauch \& unterstützt große Adressräume (64-Bit)
+\item weitere andere Möglichkeiten: invertierte (physischer Rahmen auf Seiten) oder segmentierte Seitentabellen
+\end{itemize}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[scale=.2]{pictures/mehrseit0.png}
+\caption{Problem großer Seitentabellen}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[scale=.3]{pictures/mehrseit1.png}
+\caption{Idee mehrstufiger Seitentabelle}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[scale=.2]{pictures/mehrseit2.png}
+\caption{Beispiel zur mehrstufigen Seitentabelle}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[scale=.2]{pictures/mehrseit3.png}
+\caption{Addressformat bei mehr als 2 Stufen}
+\end{minipage}
+\end{figure}
+
+\subsubsection{Virtueller Speicher \& Swapping}
+
+\textbf{Ziel von OS:} Unterstützung der Prozesse, wenn nicht genug physischer Speicher vorhanden 
+
+\begin{itemize}
+\item ungenutzte Seiten auf HDD/SSD ausgelagert
+\item PTE zeigt, ob Seite auf Disk
+\item Locality innerhalb Prozesse nutzen
+\item Zugriff auf ausgelagerte Seite $\rightarrow$ Page Fault
+\item Betriebssystem
+\begin{enumerate}
+\item wählt Opfer-Seite (falls RAM voll)
+\item schreibt diese ggf. zurück (Dirty Bit)
+\item lädt geforderte Seite in RAM
+\item aktualisiert PTE \& TLB
+\end{enumerate}
+\item PTE = 0 $\rightarrow$ Nirgendwo
+\item PTE $\neq$ 0 \& Present = 0 $\rightarrow$ Festplatte (langsam, groß, billig)
+\item PTE $\neq$ 0 \& Present $\neq$ 0 $\rightarrow$ Hauptspeicher (klein, schneller, teuer)
+\end{itemize}
+
+\noindent
+
+\textbf{Zentrale Beobachtung}
+
+\begin{itemize}
+\item Prozesse nutzen nur einen kleinen Teil ihres Adressraums aktiv
+\item Virtueller Speicher erzeugt Illusion eines großen Hauptspeichers
+\end{itemize}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[scale=.35]{pictures/speicherhierarchie.png}
+\caption{Speicherhierarchie}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[scale=.3]{pictures/presentbit.png}
+\caption{Present Bit}
+\end{minipage}
+\end{figure}
 
 \end{document}
