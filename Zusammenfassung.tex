@@ -31,7 +31,17 @@
   numbersep=5pt,
   showstringspaces=false,
   frame=single,
-  breaklines=true
+  breaklines=true, 
+  literate=
+    {ä}{{\"a}}1
+    {ö}{{\"o}}1
+    {ü}{{\"u}}1
+    {Ä}{{\"A}}1
+    {Ö}{{\"O}}1
+    {Ü}{{\"U}}1
+    {ß}{{\ss}}1
+    {ã}{{\~a}}1
+    {é}{{\'e}}1
 }
 
 \newcommand{\greencheck}{\textcolor{green}{\scalebox{1.5}{\checkmark}}}
@@ -970,82 +980,82 @@ Ablauf eines Speicherzugriffs:
 \\[1em]
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock2.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock2.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock3.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock3.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock4.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock4.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock5.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock5.png}
 \end{minipage}
 \\[1em]
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock6.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock6.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock7.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock7.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock8.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock8.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock9.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock9.png}
 \end{minipage}
 \\[1em]
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock10.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock10.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock11.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock11.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock12.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock12.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock13.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock13.png}
 \end{minipage}
 \\[1em]
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock14.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock14.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock15.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock15.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock16.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock16.png}
 \end{minipage}
 \hfill
 \begin{minipage}[t]{.24\textwidth}
 \centering
-\includegraphics[scale=.2]{pictures/virtualisierung/clock17.png}
+\includegraphics[width=\linewidth]{pictures/virtualisierung/clock17.png}
 \end{minipage}
 \caption{Veranschaulichung des Clock-Algos von links nach rechts durch jede Zeile}
 \end{figure}
@@ -1056,6 +1066,8 @@ Ablauf eines Speicherzugriffs:
 \item Software-Zähler für Nutzungswahrscheinlichkeit
 \item Dirty-Bit ausnutzen: nicht modifizierte Seiten bevorzugt auslagern
 \end{itemize}
+
+\newpage
 
 \section{Nebenläufigkeit}
 
@@ -1161,7 +1173,7 @@ Ein Thread führt nicht-kritische Arbeit im Hintergrund aus (wenn CPU untätig)
 \textbf{Nichtdeterminismus}
 \begin{itemize}
 \item Nebenläufigkeit kann zu nicht deterministischen Ergebnissen führen
-\item unterschiedliche Ergebniss bei gleichen Eingaben
+\item unterschiedliche Ergebnisse bei gleichen Eingaben
 \item Race Condition: hängt vom Scheduling ab
 \item Tests unzuverlässig
 \end{itemize}
@@ -1578,5 +1590,576 @@ void release (lock_t *lock) {
 \end{minipage}
 \caption{Performance bei Spinning \& Yield}
 \end{figure}
+
+\subsection{Synchronisation}
+
+\subsubsection{Wechselseitiger Ausschluss (Mutual Exlclsion)}
+
+\textbf{Spinlocks}
+\begin{itemize}
+\item Threads prüfen aktiv, ob ein Lock frei ist
+\item effizient nur bei sehr kurzen Wartezeiten
+\item verbesserbar durch \texttt{yield()}, damit keine CPU verschwendet wird
+\end{itemize}
+\noindent
+\textbf{Blockierende Locks}
+\begin{itemize}
+\item Threads werden blockiert, statt aktiv zu warten
+\begin{figure}[H]
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block2.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block3.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block4.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block5.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block6.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block7.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block8.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block9.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block10.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block11.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block12.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/block13.png}
+\end{minipage}
+\caption{Visualisierung mit Blocken statt yield}
+\end{figure}
+\item mit \texttt{park()} wird ein Thread schlafen gelegt, \texttt{unpark()} weckt ihn
+\item Problem \& Race Condition: \\
+\texttt{unpark()} könnte davor passieren bevor ein Thread wirklich schläft $\rightarrow$ wacht so nie auf
+\item Lösung: \texttt{setpark()}
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\begin{lstlisting}[language=C]
+typedef struct {
+	bool lock;
+	bool guard;
+	queue_t q; // Eine Warteschlange
+} lock_t;
+
+void init(lock_t *l) {
+	l->lock = false;
+	l->guard = false;
+	(l->q).head = NULL;
+	(l->q).tail = NULL;
+}
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\begin{lstlisting}[language=C]
+void acquire(lock_t *l) {
+	while (test_and_set(&l->guard, true));
+	if (l->lock) {
+		qadd(l->q, tid);
+		setpark(); //Park ankündigen
+		l->guard = false;
+		park(); // Wenn kein unpark seit setpark
+	} else {
+		l->lock = true;
+		l->guard = false;
+	}
+}
+
+void release(lock_t *l) {
+	while (test_and_set(&l->guard, true));
+	if (qempty(l->q)) l->lock = false;
+	else unpark(qremove(l->q));
+	l->guard = false;
+}
+\end{lstlisting}
+\end{minipage}
+\end{figure}
+\end{itemize}
+
+\textbf{Two-Phase Waiting}
+\begin{itemize}
+\item zuerst kurz spinnen, dann blockieren
+\item gut, wenn Lock-Haltedauer unbekannt
+\item Lockzeit t und Kontextwechsel (Zeit c) \\
+$\rightarrow$ t < c: Optimaler Fall Spinning \\
+$\rightarrow$ t > c: Optimaler Fall sofortiges Blockieren
+\item Beispiel wäre Linux futex
+\end{itemize}
+
+\subsubsection{Condition Variables (CV)}
+
+\textbf{Grundidee}
+\begin{itemize}
+\item Warteschlange von blockierten Threads
+\item \texttt{cond\_wait(cv, lock)} blockiert \& gibt Lock atomar frei
+\item \texttt{cond\_signal(cv)} weckt einen wartenden Thread
+\end{itemize}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/join1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/join2.png}
+\end{minipage}
+\caption{Join mit CVs für Ordnung}
+\end{figure}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Faustregel 1}
+\begin{itemize}
+\item zusätzlich zu CV Zustand explizit verwalten
+\item bei \texttt{join()}: Flag \texttt{done}
+\item Signal vor Warten kann anderen Thread ewig blockieren
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\vspace{-5mm}
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/join3.png}
+\caption{\texttt{done == 0} gesetzt in if-Bedingung}
+\end{minipage}
+\end{figure}
+
+\subsubsection{Producer/Consumer Problem}
+
+\begin{itemize}
+\item Producer füllen Buffer, Consumer entnehmen
+\item Buffer leer $\rightarrow$ Consumer warten
+\item Buffer voll $\rightarrow$ Producer warten
+\item Synchronisation: Locks + 1-2 CVs
+\end{itemize}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv2.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv3.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv4.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv5.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv6.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv7.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv8.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv9.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.19\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv10.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv11.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv12.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv13.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pcv14.png}
+\end{minipage}
+\caption{Veranschaulichung der Funktionsweise von Producer Consumer}
+\end{figure}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci2.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci3.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci4.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci5.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci6.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci7.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci8.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci9.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci10.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci11.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci12.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci13.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci14.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci15.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci16.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci17.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci18.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci19.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci20.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci21.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci22.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci23.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci24.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci25.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci26.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci27.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci28.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci29.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci30.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci31.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.24\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/pci32.png}
+\end{minipage}
+\caption{1 Producer, 1 Consumer \& 1 gemeinsamer Buffer}
+\end{figure}
+
+\newpage
+\noindent
+\textbf{Fehlerhafte Implementierungen}
+\begin{itemize}
+\item nur 1 CV $\rightarrow$ falsches Aufwecken bei mehreren Threads
+\item mit 2 CVs aber \texttt{if} statt \texttt{while} $\rightarrow$ Consumer können falsche Daten lesen
+\item \texttt{cond\_broadcast(cond\_t *cv} nicht sinnvoll $\rightarrow$ meisten Threads dann wieder direkt blockiert nach kurzem Aufwecken
+\begin{figure}[H]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/1p2c1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/1p2c2.png}
+\end{minipage}
+\caption{1 Producer \& 2 Consumer fehlerhafte Implementation}
+\end{figure}
+\end{itemize}
+
+\noindent
+\textbf{Faustregel 2}
+\begin{itemize}
+\item nach Aufwachen immer Zustand erneut prüfen $\rightarrow$ \texttt{while} statt \texttt{if}
+\item möglicherweise weiterer Thread zwischen signal \& Aufwachen von wait gelaufen
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.4]{pictures/nebenläufigkeit/1p2c3.png}
+\caption{Korrekte Implementation mit while-Schleife}
+\end{figure}
+
+\subsubsection{Semaphore}
+
+\begin{itemize}
+\item haben eigenen Zustand (Zähler)
+\item \texttt{sem\_wait()} $\rightarrow$ dekrementiere/blockiere
+\item \texttt{sem\_post()} $\rightarrow$ inkrementiere \& wecke einen Thread auf
+\item Semaphore $\leftrightarrow$ Lock + CV
+\begin{figure}[H]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/las1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/las2.png}
+\end{minipage}
+\caption{Beweise zur Äquivalenz von Semaphoren mit Lock + CVs}
+\end{figure}
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.4]{pictures/nebenläufigkeit/sjoin.png}
+\caption{Join mit CV vs Semaphor}
+\end{figure}
+
+\subsubsection{Producer/Consumer mit Semaphoren}
+
+\begin{itemize}
+\item Consumer muss warten, bis Producer Buffer füllt
+\item Producer muss warten, bis Consumer Buffer leert
+\end{itemize}
+
+\textbf{Fall 1: 1 Producer, 1 Consumer, 1 Slot}
+\begin{itemize}
+\item \texttt{emptyBuffer = 1}
+\item \texttt{fullBuffer = 0}
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Producer}
+\begin{lstlisting}[language=C]
+while (1) {
+	sem_wait(&emptyBuffer);
+	fill(&buffer);
+	sem_post(&fullBuffer);
+}
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Consumer}
+\begin{lstlisting}[language=C]
+while (1) {
+	sem_wait(&fullBuffer);
+	use(&buffer);
+	sem_post(&emptyBuffer);
+}
+\end{lstlisting}
+\end{minipage}
+\end{figure}
+\end{itemize}
+
+\noindent
+\textbf{Fall 2: Ringbuffer mit N Slots}
+
+\begin{itemize}
+\item \texttt{emptyBuffer = N}
+\item \texttt{fullBuffer = 0}
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Producer}
+\begin{lstlisting}[language=C]
+i = 0;
+while (1) {
+	sem_wait(&emptyBuffer);
+	fill(&buffer[i]);
+	i = (i + 1) % N;
+	sem_post(&fullBuffer);
+}
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Consumer}
+\begin{lstlisting}[language=C]
+j = 0;
+while (1) {
+	sem_wait(&fullBuffer);
+	use(&buffer[j]);
+	j = (j + 1) % N;
+	sem_post(&emptyBuffer);
+}
+\end{lstlisting}
+\end{minipage}
+\end{figure}
+\end{itemize}
+
+\noindent
+\textbf{Fall 3: 1 geteilter Ringbuffer mit N Elementen}
+
+\begin{itemize}
+\item mehrere Producer Threads, mehrere Consumer Threads
+\item Jeder Consumer muss exklusiv ein volles Element verarbeiten
+\item Jeder Producer muss exklusiv ein leeres Element verarbeiten
+\item Lösung: zusätzlicher Mutex, aber nur für index-Suche, nicht für Verarbeiten
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.4]{pictures/nebenläufigkeit/pcs.png}
+\caption{grobe Implementation mit Semaphoren}
+\end{figure}
+\end{itemize}
 
 \end{document}
