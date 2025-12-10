@@ -1737,6 +1737,7 @@ $\rightarrow$ t > c: Optimaler Fall sofortiges Blockieren
 \item Warteschlange von blockierten Threads
 \item \texttt{cond\_wait(cv, lock)} blockiert \& gibt Lock atomar frei
 \item \texttt{cond\_signal(cv)} weckt einen wartenden Thread
+\item \texttt{cond\_broadcast(cv)} weckt alle Threads unnötig $\rightarrow$ ineffizient
 \end{itemize}
 
 \begin{figure}[H]
@@ -2161,5 +2162,247 @@ while (1) {
 \caption{grobe Implementation mit Semaphoren}
 \end{figure}
 \end{itemize}
+
+\subsection{Probleme \& Lösungen}
+
+\subsubsection{Arten von Concurrency-Bugs}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+Studie von Lu et al. (2008) zeigt v.a. drei große Klassen:
+\begin{itemize}
+\item Atomicity Violations
+\item Ordering Bugs
+\item Deadlocks
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\vspace{-15mm}
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/concur.png}
+\caption{Concurrency Bugs}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/atomvio1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/atomvio2.png}
+\end{minipage}
+\caption{Atomic Violation \& Fix mit Locks: MySQL}
+\end{figure}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/orderingbug1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/orderingbug2.png}
+\end{minipage}
+\caption{Ordering Bug \& Fix mit CV: Mozilla}
+\end{figure}
+
+\subsubsection{Deadlock}
+
+Ein Deadlock liegt vor, wenn Threads gegenseitig auf Ressourcen warten und kein Fortschritt mehr möglich ist.
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.5]{pictures/nebenläufigkeit/deadlock.png}
+\caption{einfaches Deadlockbeispiel}
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/deadlockcode1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/deadlockcode2.png}
+\end{minipage}
+\caption{Code Bsp. 1 \& zirkuläre Abhängigkeit}
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/deadlockcode3.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/deadlockcode4.png}
+\end{minipage}
+\caption{Code Bsp. 2 \& nicht zirkuläre Abhängigkeit}
+\end{figure}
+
+\subsubsection{Deadlock: Theorie}
+
+Deadlock tritt auf wenn alle vier Bedingungen erfüllt:
+\begin{enumerate}
+\item Mutual Exclusion: Ressourcen exklusiv
+\item Hold-and-Wait: Thread hält Ressourcen und wartet auf weitere
+\item Keine Präemption: Ressourcen können nicht erzwungen entzogen werden
+\item Zirkuläres Warten: Zyklus im Ressourcen-Wartensgraph
+\end{enumerate}
+\noindent
+$\rightarrow$ Zur Deadlock-Vermeidung reicht es, eine dieser Bedingungen zu brechen
+
+\subsubsection{Methoden zur Deadlockvermeidung}
+
+\begin{enumerate}
+\item Mutual Exclusion eliminieren? \\
+Selten möglich, aber durch lockfreie Algorithmen (CAS) teilweise realisierbar.
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.4]{pictures/nebenläufigkeit/mutexem.png}
+\caption{Wait-freie Algos: Add}
+\end{figure}
+\item Hold-and-Wait eliminieren
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.4]{pictures/nebenläufigkeit/haw.png}
+\caption{Alle benötigten Locks in einem Schritt anfordern}
+\end{figure}
+\item Präemption ermöglichen
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.4]{pictures/nebenläufigkeit/präer.png}
+\caption{nicht blockierend trylock, ggf. zuvor gehaltene Locks freigeben \& neu versuchen}
+\end{figure}
+\newpage
+\item Zirkuläres Warten elimienieren
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\vspace{-60mm}
+Strategie:\\
+\begin{itemize}
+\item Entscheiden, welche Locks vor anderen angefragt werden sollten
+\item Wenn A vor B, dann niemals A sperren wenn B bereits von einem anderen Thread gehalten wird!
+\item Dokumentieren \& Code entsprechend schreiben
+\end{itemize}
+\noindent
+Funktioniert, wenn das System klare, getrennte Schichten hat
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/lockstrat2.png}
+\end{minipage}
+\caption{Lock-Hierachien \& Reihenfole in z.B. Linux}
+\end{figure}
+\end{enumerate}
+
+\subsubsection{Dining Philosophers Problem (Dijkstra/Hoare)}
+
+\textbf{Problem:}
+\begin{itemize}
+\item Fünf Philosophen sind entweder am Essen oder Denken
+\item Sie sitzen um einen runden Tisch mit je einer Portion Spaghetti und fünf Gabeln/Essstäbchen zwischen den
+Tellern
+\item Essen erfordert die zwei Gabeln links \& rechts vom Teller, die ein Philosoph nacheinander aufnimmt
+\item Philosophen sprechen nicht miteinander
+\end{itemize}
+\noindent
+\textbf{Lösungen:}
+\begin{itemize}
+\item Hold-and-Wait brechen durch globales Lock
+\item Präemption: Ablegen der ersten Gabel, wenn zweite nicht verfügbar
+\item Zirkuläres Warten brechen: Einer der Philosophen greift in anderer Reihenfolge zu
+\end{itemize}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/diningphilo1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/diningphilo2.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/diningphilo3.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/diningphilo4.png}
+\end{minipage}
+\caption{Ansätze \& Lösungen für Philosophenproblem}
+\end{figure}
+
+\subsubsection{Programmierbeispiele: Listen \& Locking}
+
+\begin{enumerate}
+\item Einfach verkettete Liste in C
+\begin{figure}[H]
+\begin{minipage}[t]{.33\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/linkedlistc1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.33\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/linkedlistc2.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.33\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/linkedlistc3.png}
+\end{minipage}
+\\[1em]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/linkedlistc4.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/nebenläufigkeit/linkedlistc5.png}
+\end{minipage}
+\caption{nebenläufiges \texttt{list\_insert} führt zu Race Condition}
+\end{figure}
+\item Listen mit Locking
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.5]{pictures/nebenläufigkeit/llock.png}
+\caption{einfacher Mutex um Insert}
+\end{figure}
+\item Lock-freie Liste (CAS)
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.4]{pictures/nebenläufigkeit/locki.png}
+\caption{vergleicht Kopfzeiger atomar \& ersetzt ihn}
+\end{figure}
+\end{enumerate}
+
+\subsubsection{Reader/Writer Locks}
+
+Ziel:
+\begin{itemize}
+\item Viele Reader gleichzeitig
+\item Nur ein Writer exklusiv
+\end{itemize}
+\newpage
+\noindent
+Implementierung mit zwei Semaphoren:
+\begin{itemize}
+\item \texttt{lock} schützt Leserzählung
+\item \texttt{writelock} schützt exklusives Schreiben
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.5]{pictures/nebenläufigkeit/rwlocks.png}
+\caption{Reader/Writer Locks Codebsp}
+\end{figure}
 
 \end{document}
