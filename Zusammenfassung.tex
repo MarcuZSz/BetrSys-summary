@@ -2219,6 +2219,9 @@ Ein Deadlock liegt vor, wenn Threads gegenseitig auf Ressourcen warten und kein 
 \centering
 \includegraphics[scale=.5]{pictures/nebenläufigkeit/deadlock.png}
 \caption{einfaches Deadlockbeispiel}
+\end{figure}
+
+\begin{figure}[H]
 \begin{minipage}[t]{.45\textwidth}
 \centering
 \includegraphics[width=\linewidth]{pictures/nebenläufigkeit/deadlockcode1.png}
@@ -2229,6 +2232,9 @@ Ein Deadlock liegt vor, wenn Threads gegenseitig auf Ressourcen warten und kein 
 \includegraphics[width=\linewidth]{pictures/nebenläufigkeit/deadlockcode2.png}
 \end{minipage}
 \caption{Code Bsp. 1 \& zirkuläre Abhängigkeit}
+\end{figure}
+
+\begin{figure}[H]
 \begin{minipage}[t]{.45\textwidth}
 \centering
 \includegraphics[width=\linewidth]{pictures/nebenläufigkeit/deadlockcode3.png}
@@ -2275,7 +2281,6 @@ Selten möglich, aber durch lockfreie Algorithmen (CAS) teilweise realisierbar.
 \includegraphics[scale=.4]{pictures/nebenläufigkeit/präer.png}
 \caption{nicht blockierend trylock, ggf. zuvor gehaltene Locks freigeben \& neu versuchen}
 \end{figure}
-\newpage
 \item Zirkuläres Warten elimienieren
 \begin{figure}[H]
 \begin{minipage}[t]{.45\textwidth}
@@ -2373,7 +2378,7 @@ Tellern
 \item Listen mit Locking
 \begin{figure}[H]
 \centering
-\includegraphics[scale=.5]{pictures/nebenläufigkeit/llock.png}
+\includegraphics[scale=.45]{pictures/nebenläufigkeit/llock.png}
 \caption{einfacher Mutex um Insert}
 \end{figure}
 \item Lock-freie Liste (CAS)
@@ -2391,7 +2396,6 @@ Ziel:
 \item Viele Reader gleichzeitig
 \item Nur ein Writer exklusiv
 \end{itemize}
-\newpage
 \noindent
 Implementierung mit zwei Semaphoren:
 \begin{itemize}
@@ -2403,6 +2407,129 @@ Implementierung mit zwei Semaphoren:
 \centering
 \includegraphics[scale=.5]{pictures/nebenläufigkeit/rwlocks.png}
 \caption{Reader/Writer Locks Codebsp}
+\end{figure}
+
+\section{Persistenz}
+
+\subsection{Input/Output}
+
+\subsubsection{Hardware für I/O}
+
+\begin{itemize}
+\item Geräte sind über eine Hierarchie von Bus-Systemen mit der CPU verbunden (klassisch: North-/Southbridge; heute stärker integriert, z. B. PCIe, USB, NVMe)
+\item jedes Gerät besitzt Geräteregister
+\begin{itemize}
+\item Status (z. B. BUSY/FREE)
+\item Command (welche Operation)
+\item Data (Datenübertragung)
+\end{itemize}
+\item Interne Gerätekomplexität (Controller, RAM, Spezialchips) für OS verborgen
+\end{itemize}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/persistenz/io1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/persistenz/io2.png}
+\end{minipage}
+\caption{Hardware für I/O (heute) \& vereinfachtes Gerät}
+\end{figure}
+
+\subsubsection{Kommunikation OS \& Gerät}
+
+\begin{enumerate}
+\item \textbf{Statusprüfung}
+\begin{itemize}
+\item OS prüft, ob ein Gerät bereit ist (z. B. STATUS == BUSY)
+\end{itemize}
+\item \textbf{Polling vs. Interrupts}
+\begin{itemize}
+\item Polling: CPU fragt aktiv den Gerätestatus ab \\
+$\rightarrow$ einfach, aber ineffizient bei langsamen Geräten
+\item Interrupts: Gerät unterbricht CPU bei Statusänderung \\
+$\rightarrow$ bessere Überlappung von Rechnen \& I/O
+\item Trade-offs:
+\begin{itemize}
+\item Langsame Geräte $\rightarrow$ Interrupts sinnvoll
+\item Sehr schnelle/kurze Operationen $\rightarrow$ Polling effizienter
+\item Hybrid: erst Spinning, dann Interrupt (Two-phase Waiting)
+\end{itemize}
+\item Problem: Interrupt-Fluten können zu Livelock führen \\
+$\rightarrow$ Lösung: Interrupt Coalescing (Gerät kann Daten zwischenspeichern \& mehrere Interrupts zusammenlegen)
+\end{itemize}
+\end{enumerate}
+
+\subsubsection{Datenaustausch}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Programmed I/O (PIO)}
+\begin{itemize}
+\item CPU überträgt Daten direkt an das Gerät
+\item CPU währenddessen blockiert
+\item gut für wenige Bytes, schlecht für große Datenmengen
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Direct Memory Access (DMA)}
+\begin{itemize}
+\item CPU legt Daten im Hauptspeicher ab
+\item Gerät liest/schreibt Daten selbstständig aus/in den Speicher
+\item CPU wird entlastet $\rightarrow$ deutlich effizienter für große Transfers
+\item Umsetzung über DMA-Controller oder Bus Mastering
+\end{itemize}
+\end{minipage}
+\end{figure}
+
+\subsubsection{Adressierung von Geräten}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Port I/O}
+\begin{itemize}
+\item Geräte haben separate I/O-Ports
+\item Zugriff über spezielle Instruktionen (\texttt{in}, \texttt{out} auf x86)
+\item Vorteil: kein MMU-Zwang, separater Adressraum
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\textbf{Memory-Mapped I/O}
+\begin{itemize}
+\item Gerätereigister sind in den normalen Speicheradressraum eingeblendet
+\item Zugriff mit normalen Load/Store-Instruktionen
+\item Vorteil: versch. Instruktionen lassen sich für Zugriffe verwenden
+\end{itemize}
+\end{minipage}
+$\Rightarrow$ \textbf{heutiger Standard:} x86 mit Port I/O + MMIO \& ARM nur MMIO
+\end{figure}
+
+\subsubsection{Gerätetreiber \& Abstraktion}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.45\textwidth}
+\begin{itemize}
+\item sehr viele unterschiedliche Geräte mit eigenen Protokollen
+\item Lösung: Gerätetreiber
+\begin{itemize}
+\item kapseln Hardware-Details
+\item bieten ein einheitliches Interface für das Betriebssystem
+\end{itemize}
+\item über 70 \% des Linux-Kernels besteht aus Treibern
+\end{itemize}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.45\textwidth}
+\centering
+\vspace{0mm}
+\includegraphics[scale=.4]{pictures/persistenz/ss.png}
+\caption{Storage-Stackbsp.}
+\end{minipage}
 \end{figure}
 
 \end{document}
