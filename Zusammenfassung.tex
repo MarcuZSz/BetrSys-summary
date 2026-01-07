@@ -2532,4 +2532,111 @@ $\Rightarrow$ \textbf{heutiger Standard:} x86 mit Port I/O + MMIO \& ARM nur MMI
 \end{minipage}
 \end{figure}
 
+\subsection{Festplatten}
+
+\subsubsection{Grundlagen \& Interface}
+
+\begin{itemize}
+\item Festplatten stellen einen adressierbaren Array aus Sektoren/Blöcken da
+\item Typische Sektorgrößen: 512 B oder 4 KiB
+\item Grundoperationen: Lesen und Schreiben ganzer Sektoren
+\item Auch SSDs benötigen spezielles Management, trotz höherer Geschwindigkeit
+\end{itemize}
+
+\subsubsection{Physischer \& logischer Aufbau}
+
+\begin{itemize}
+\item HDD besteht aus
+\begin{itemize}
+\item Platten (Disks) mit magnetischer Beschichtung
+\item Spindel (Rotation, konstante Drehzal)
+\item Lese-/Schreibköpfe auf beweglichen Armen
+\end{itemize}
+\item logische Struktur
+\begin{itemize}
+\item Spuren (Tracks): konzentrische Kreise
+\item Sektoren: Unterteilung der Spuren
+\item Zylinder: Spuren gleicher Position auf allen Plattenoberflächen
+\end{itemize}
+\item typische Drehzahlen: 5000 - 15000 RPM
+\item Positionierung mit Hilfe von Servobursts: alle 3-5 Sektoren Pos.daten speichern, bei Bedarf anpassen nötig für Bestimmen der Position
+\end{itemize}
+
+\begin{figure}[H]
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pictures/persistenz/hddaufbau1.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{.5\textwidth}
+\centering
+\includegraphics[scale=.5]{pictures/persistenz/hddaufbau2.png}
+\end{minipage}
+\caption{Vereinfachte Ansicht vom Aufbau HDD \& des logischen Aufbaus}
+\end{figure}
+
+\subsubsection{Lesen eines Sektors}
+
+\begin{enumerate}
+\item Seek-Zeit: Positionierung des Kopfes auf richtige Spur
+\item Rotationslatenz: Warten bis gewünschter Sektor unter dem Kopf
+\item Transferzeit: Übertragung der Daten
+\end{enumerate}
+\noindent
+$\Rightarrow \text{Gesamtzeit} = \text{Seek} + \text{Rotation} + \text{Transfer}$
+
+\[t = t_{\text{seek}} + t_{\text{rot}} + t_{\text{trans}}\]
+
+\subsubsection{Zugriffszeiten \& Performance}
+
+\begin{itemize}
+\item Seek-Zeit: mehrere Millisekunden ($\approx$ 4-10ms), dominiert Zugriffszeit
+\item Rotationslatenz:
+\[t_{\text{rot}} = \frac{1}{2} \text{U} \cdot \frac{1}{7200 \frac{\text{U}}{\text{min}}} = \frac{60 \cdot 1000 \text{ms}}{14400} \approx 4,17 \text{ms} ~\text{halbe Drehung im Durchschnitt}\]
+\item Transferzeit:
+\[t_{\text{trans}} = 16 \text{KiB} \cdot \frac{1}{105 \frac{\text{MB}}{\text{s}}} = 16 \text{KiB} \cdot \frac{1}{105 \frac{\text{B}}{\mu \text{s}}} = \frac{16 \cdot 1024 \text{B}}{105 \text{B}} \mu \text{s} \approx 156 \mu \text{s} \]
+\item Gesamtzeit:
+\[R_{\text{I/O}}= \frac{16 \text{KiB}}{9 \text{ms} \cdot 4,17 \text{ms} + 156 \mu \text{s}} = \frac{16 \cdot 1024 \text{B}}{0,0133 \text{s}} \approx 1229476 \frac{\text{B}}{{s}} \approx 1,2 \frac{\text{MB}}{\text{s}}\]
+\item sequentielle Zugriffe schneller als Random Access, da I/O-Rate sich max. Transferrate annähert
+\end{itemize}
+
+\subsubsection{Optimierung in HDDs}
+
+\begin{itemize}
+\item Spurenversatz: ermöglicht kontinuierliches Lesen ohne zusätzliche Rotation
+\item Zoned Bit Recording: äußere Spuren enthalten mehr Sektoren $\rightarrow$ höhere Geschwindigkeit
+\item Cache (8-256 MB):
+\begin{itemize}
+\item Read-ahead (Track Buffer): liest Inhalt gesamter Spur während des Wartens auf Rotation
+\item Write-back: Schreibzugriff direkt erfolgreich an CPU gemeldet, obwohl noch nicht auf Platte $\rightarrow$ möglicher Datenverlust bei Stromausfall
+\item Write-through: schreibt Daten in Cache \& direkt auf Platten $\rightarrow$ kein Datenverlust, aber langsam
+\end{itemize}
+\item Command Queueing: interne Neuordnung von Anfragen zur besseren Performance
+\end{itemize}
+
+\subsubsection{I/O-Scheduling}
+
+Ziel: Minimierung der Seek-Zeit
+
+\begin{itemize}
+\item First Come First Serve (FCFS): einfach, ineffizient
+\item Shortest Seek Time First (SSTF): Greedy Algo $\rightarrow$ nächstbeste Entscheidung
+\begin{itemize}
+\item Nearest-Block-First (NBF) wenn genaue Geometrie unbekannt: Block (Sektor) mit nächstliegenden Nummer
+\item Shortest Position Time First (SPTF): betrachtet zusätzlich zu Seek-Zeit Rotationszeit, unter Umständen Sektor auf weiter entfernter Spur schneller als nochmal zu rotieren
+\end{itemize}
+\item SCAN (Aufzug Algo): bedient Requests, während Zylinder passiert wird
+\item C-SCAN (Circular SCAN)/C-LOOL: Verbessung; faire, gleichmäßige Wartenzeiten
+\item Scheduling in Platte \& OS
+\end{itemize}
+
+\subsubsection{SSDs im Vergleich}
+
+\begin{itemize}
+\item keine mechanischen Teile $\rightarrow$ sehr schneller Random Access
+\item Probleme: Überschreiben nur blockweise möglich (Erase before write) \& begrenzte Schreibzyklen
+\item Lösung: Flash-Translation-Layer, Virtualisierung, Wear Leveling
+\item bei Random Access um Meilen besser, sequentielle Transferraten mit HDDs vergleichbarer
+\end{itemize}
+
 \end{document}
